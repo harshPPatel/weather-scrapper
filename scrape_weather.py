@@ -79,16 +79,16 @@ class WeatherScraper(HTMLParser):
       self.is_tbody_open = False
     if (self.is_tbody_open and tag == "tr"):
       self.is_tr_open = False
-      print(self.temp_data)
+      self.weather_data[self.temp_date.strftime('%Y-%m-%d')] = self.temp_data
     if (self.is_tr_open and tag == "th"):
       self.is_th_open = False
     if (self.is_tr_open and tag == "td"):
       self.is_td_open = False
 
-  # def print_data(self):
-  #   for key in self.temp:
-  #     # printing all the colors
-  #     print(key, self.colors[key])
+  def print_data(self):
+    for key in self.weather_data:
+      # printing all the colors
+      print(key, self.weather_data[key])
   
 
 #starts with january of a set year that is know (aka, 2018), and makes requests incrementing by 1 until
@@ -102,7 +102,7 @@ def get_start_date_month(startYear):
   x = 1
 
 def build_url(startYear, endYear, month):
-  return 'https://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174&timeframe=2&StartYear=1840&EndYear=2020&Day=1&Year=2020&Month=11'
+  return 'https://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174&timeframe=2&StartYear=1840&EndYear=2020&Day=1&Year=2020&Month=10'
   return 'http://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174&timeframe=2&StartYear='+str(startYear)+'&EndYear='+str(endYear)+'&Day=1&'+str(endYear)+'&Month='+str(month)
 
 myparser = WeatherScraper()
@@ -111,3 +111,4 @@ with urllib.request.urlopen(build_url(None, None, None)) as response:
   
   # parsing HTML
   myparser.feed(html)
+  myparser.print_data()
