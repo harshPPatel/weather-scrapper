@@ -47,18 +47,15 @@ class WeatherScraper(HTMLParser):
       self.is_scraping = True
       self.temp_date = None
       self.temp_data = {}
-      return
     if (self.is_scraping):
       if (tag == "tr"):
         # resetting some values and toggling flag when we are reading tr tag
         self.is_tr_open = True
         self.td_count = 0
         self.temp_data = {}
-        return
       if (self.is_tr_open and tag == "th"):
         # toggling th flag when we are reading th tag
         self.is_th_open = True
-        return
       if (self.is_th_open and tag == "abbr"):
         for attr in attrs:
           # th tag contains abbr tag which holds full date as title attribute
@@ -72,12 +69,10 @@ class WeatherScraper(HTMLParser):
               date = self.temp_date.strftime('%Y-%m-%d')
               if date in self.weather_data:
                 self.is_looping = False
-                return
             except Exception as e:
               print("ERROR: Invalid Date")
               print(e.with_traceback())
               self.temp_date = None
-            return
       # toggling the td flag if temp_date exists (the last row (for current day) does not contains any values,
       # it also does not have any abbr value, we are ignoring that value as looks like this row is updated next day),
       # if tr tag is open and if total td count is less than three because we only need values from first three columns
@@ -120,9 +115,10 @@ class WeatherScraper(HTMLParser):
         # converting the temp_date (datetime) object to requested string format if value exists in temp_date
         date = self.temp_date.strftime('%Y-%m-%d') if self.temp_date else None
         # adding temp data to weather_data dictionary and restting temp values for next tr row
-        self.weather_data[date] = self.temp_data
-        self.temp_data = {}
-        self.temp_date = None
+        if (date):
+          self.weather_data[date] = self.temp_data
+          self.temp_data = {}
+          self.temp_date = None
       if (self.is_tr_open and tag == "th"):
         self.is_th_open = False
       if (self.is_tr_open and tag == "td"):
@@ -137,6 +133,7 @@ class WeatherScraper(HTMLParser):
     return 'http://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174&timeframe=2&Year='+str(year)+'&Month='+str(month)
 
   def scrape_data(self):
+      # QUESTION: Is this method supposed to be here? Or are we supposed to create outside class?
       # fetching the current year and month when this script will be running
       today = datetime.today()
       year = today.year
