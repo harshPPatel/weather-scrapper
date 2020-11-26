@@ -7,9 +7,6 @@ import mysql.connector
 
 class DBOperations():
 
-  def __init__(self, data):
-    self.data = data
-
   def initialize_db(self):
     with DBCM("weather.sqlite") as cur:
             cur.execute("""CREATE TABLE IF NOT EXISTS weather (
@@ -19,11 +16,38 @@ class DBOperations():
                     min_temp real not null,
                     max_temp real not null,
                     avg_temp real not null);""")
-  def fetch_data(self):
-    x = 1
 
-  def save_data(self):
-    x = 1
+
+  def fetch_data(date_to_fetch):
+    """Takes a date, and a location, and retrives the values if any are found"""
+    """Is this supposed to return a single record, or multiple?
+    For now, I will write it to fetch a single record, but I may want to come back
+    and refactor this when some of the GUI work is finished"""
+    with DBCM("weather.sqlite") as cur:
+      query = "SELECT * FROM weather WHERE sameple_date = ?"
+      return cur.execute(query, date_to_fetch)
+
+
+  def save_data(self, dataset):
+    """Takes a dictionary with a Date, Location, Min Tem, Max tem, and Average temp, and saves it to a db"""
+    """Need to connect and figure out how to avoid duplicating data - I've reached out to someone for help, But
+    I wanted to test basic functionality first just so I could get something done"""
+    with DBCM("weather.sqlite") as cur:
+      for data in dataset:
+          insert_string = ''' INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
+                      VALUES(?,?,?,?)'''
+          values = (data, dataset[data]["location"], dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
+          cur.execute(insert_string, values)
+
+  def fetch_data_beta(start_date, end_date, location):
+    """Takes a date, and a location, and retrives the values if any are found"""
+    """Is this supposed to return a single record, or multiple?
+    For now, I will write it to fetch a single record, but I may want to come back
+    and refactor this when some of the GUI work is finished"""
+    with DBCM("weather.sqlite") as cur:
+      query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ? AND location = ?"
+      params = (start_date, end_date, location)
+      return cur.execute(query, params)
 
 
   def purge_data(self):
