@@ -7,31 +7,37 @@ class PlotOperations():
   def show_boxplot(self):
     labels = self.data.keys()
     data = self.data.values()
-    # figure = plot.figure(1, figsize=(10,8))
-    plot.boxplot(data)
-    plot.xticks(range(1, len(labels) + 1), labels)
-    # figure, ax = plot.subplots()
+    # Method 1
+    # TODO: Format data
     # TODO: Make it dynamic
     plot.title('Monthly Temperature Distribution for: 2000 to 2020')
     plot.xlabel('Month')
     plot.ylabel('Temperature (Celsius)')
+    plot.xticks(range(1, len(labels) + 1), labels)
+    plot.boxplot(data)
+    
+    # Method 2
+    # subplots = plot.subplots()
+    # ax = subplots[1]
+    # # TODO: Make it dynamic
     # ax.set_title('Monthly Temperature Distribution for: 2000 to 2020')
+    # ax.boxplot(data)
     plot.show()
     
 
 data =  {
-  1: [1.1, 5.5, 6.2, 7.1],
-  2: [8.1, 5.4, 9.6, 4.7],
-  3: [1.1, 5.5, 6.2, 7.1],
-  4: [8.1, 5.4, 9.6, 4.7],
-  5: [1.1, 5.5, 6.2, 7.1],
-  6: [8.1, 5.4, 9.6, 4.7],
-  7: [1.1, 5.5, 6.2, 7.1],
-  8: [8.1, 5.4, 9.6, 4.7],
-  9: [1.1, 5.5, 6.2, 7.1],
-  10: [8.1, 5.4, 9.6, 4.7],
-  11: [1.1, 5.5, 6.2, 7.1],
-  12: [8.1, 5.4, 9.6, 4.7]
+  1: [1.1, 5.5, 6.2, 7.1, -1.1, -40, 45, 24.6],
+  2: [8.1, 5.4, 9.6, 4.7, 45, 12.9, -30, 6.4],
+  3: [1.1, 5.5, 6.2, 7.1, -1.1, -40, 45, 24.6],
+  4: [8.1, 5.4, 9.6, 4.7, 45, 12.9, -30, 6.4],
+  5: [1.1, 5.5, 6.2, 7.1, -1.1, -40, 45, 24.6],
+  6: [8.1, 5.4, 9.6, 4.7, 45, 12.9, -30, 6.4],
+  7: [1.1, 5.5, 6.2, 7.1, -1.1, -40, 45, 24.6],
+  8: [8.1, 5.4, 9.6, 4.7, 5.6, 10.24, 50, -40],
+  9: [1.1, 5.5, 6.2, 7.1, -1.1, -40, 45, 100],
+  10: [8.1, 5.4, 9.6, 4.7, 5.6, 10.24, 50, -40],
+  11: [1.1, 5.5, 6.2, 7.1, -1.1, -40, 45, 24.6],
+  12: [8.1, 5.4, 9.6, 4.7, 5.6, 10.24, 50, -40]
 }
 
 plt = PlotOperations(data)
