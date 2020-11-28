@@ -2,7 +2,7 @@ import sqlite3
 import datetime
 import mysql.connector
 
-#If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
+# If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
 # I can check the db for date overwrites
 # Data will be the actual dictionary that we use for each operation
 # Ok, Ill need to take a new apprach for this - because dates are texts, and I dont want it running endlessly
