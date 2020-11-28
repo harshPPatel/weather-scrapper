@@ -1,9 +1,13 @@
 import sqlite3
+import datetime
 import mysql.connector
 
 #If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
 # I can check the db for date overwrites
 # Data will be the actual dictionary that we use for each operation
+# Ok, Ill need to take a new apprach for this - because dates are texts, and I dont want it running endlessly
+# The unique constraint will prevent duplicated data
+# I Should create a class variable with the most recent date of the db, if I can.
 
 class DBOperations():
 
@@ -11,21 +15,11 @@ class DBOperations():
     with DBCM("weather.sqlite") as cur:
             cur.execute("""CREATE TABLE IF NOT EXISTS weather (
                     id integer prmary key autoincrement not null,
-                    sample_date text not null,
+                    sample_date text UNIQUE not null,
                     location text not null,
                     min_temp real not null,
                     max_temp real not null,
                     avg_temp real not null);""")
-
-
-  def fetch_data(date_to_fetch):
-    """Takes a date, and a location, and retrives the values if any are found"""
-    """Is this supposed to return a single record, or multiple?
-    For now, I will write it to fetch a single record, but I may want to come back
-    and refactor this when some of the GUI work is finished"""
-    with DBCM("weather.sqlite") as cur:
-      query = "SELECT * FROM weather WHERE sameple_date = ?"
-      return cur.execute(query, date_to_fetch)
 
 
   def save_data(self, dataset):
@@ -36,23 +30,29 @@ class DBOperations():
       for data in dataset:
           insert_string = ''' INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
                       VALUES(?,?,?,?)'''
-          values = (data, dataset[data]["location"], dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
+          values = (data, "Winnipeg, MB", dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
           cur.execute(insert_string, values)
 
-  def fetch_data_beta(start_date, end_date, location):
-    """Takes a date, and a location, and retrives the values if any are found"""
-    """Is this supposed to return a single record, or multiple?
-    For now, I will write it to fetch a single record, but I may want to come back
-    and refactor this when some of the GUI work is finished"""
+  # now.strftime("%m/%d/%Y,
+  def fetch_data(start_date = datetime.now().now.strftime("%Y-%M-%D"), end_date = datetime.now().now.strftime("%Y-%M-%D")):
+    """Takes a date, and a location, and retrives the values if any are found
+    If no parameters are provided, retruns information for todays date """
     with DBCM("weather.sqlite") as cur:
       query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ? AND location = ?"
-      params = (start_date, end_date, location)
+      params = (start_date, end_date)
       return cur.execute(query, params)
 
 
   def purge_data(self):
     with DBCM("weather.sqlite") as cur:
       cur.execute("""DROP TABLE IF EXISTS weather;""")
+
+  def get_dates(self):
+    """
+    Funtion created to get all of the dates in the current database
+    for users to select a range from"""
+    with DBCM("weather.sqlite") as cur:
+      return cur.execute("""SELECT sample_date FROM weather;""")
 
 
 class DBCM():
