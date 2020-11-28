@@ -11,6 +11,9 @@ import mysql.connector
 
 class DBOperations():
 
+  def __init__(self):
+    self.dates_data = self.get_dates()
+
   def initialize_db(self):
     with DBCM("weather.sqlite") as cur:
             cur.execute("""CREATE TABLE IF NOT EXISTS weather (
@@ -28,10 +31,11 @@ class DBOperations():
     I wanted to test basic functionality first just so I could get something done"""
     with DBCM("weather.sqlite") as cur:
       for data in dataset:
-          insert_string = ''' INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
-                      VALUES(?,?,?,?)'''
-          values = (data, "Winnipeg, MB", dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
-          cur.execute(insert_string, values)
+          while data not in self.date_data:
+            insert_string = ''' INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
+                        VALUES(?,?,?,?)'''
+            values = (data, "Winnipeg, MB", dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
+            cur.execute(insert_string, values)
 
   # now.strftime("%m/%d/%Y,
   def fetch_data(start_date = datetime.now().now.strftime("%Y-%M-%D"), end_date = datetime.now().now.strftime("%Y-%M-%D")):
