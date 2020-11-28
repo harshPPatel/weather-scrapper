@@ -42,7 +42,7 @@ class DBOperations():
     """Takes a date, and a location, and retrives the values if any are found
     If no parameters are provided, retruns information for todays date """
     with DBCM("weather.sqlite") as cur:
-      query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ? AND location = ?"
+      query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ?;"
       params = (start_date, end_date)
       return cur.execute(query, params)
 
