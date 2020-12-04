@@ -1,100 +1,83 @@
-import wx
-import webbrowser
+import tkinter as tk
 
-class WetherProcessor(wx.Frame):
-    """
-    A Frame that says Hello World
-    """
+class Application(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.master.geometry('500x400')
+        self.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.create_widgets()
 
-    def __init__(self, *args, **kw):
-        # ensure the parent's __init__ is called
-        super(WetherProcessor, self).__init__(*args, **kw)
+    def create_widgets(self):
+        tk.Label(self, text='Weather Processor', font=('Arial Bold', 22))\
+            .grid(row=0, column=0, columnspan=4, pady=(10, 24))
+        
+        self.create_db_widgets()
+        
+        self.create_bloxplot_widgets()
+        
+        self.create_lineplot_widgets()
 
-        # create a panel in the frame
-        pnl = wx.Panel(self)
+        # tk.Label(self, text="Line Plot:", font=("Arial", 16))\
+            # .grid(row=3, column=2, columnspan=4, pady=(24, 10), padx=(10, 0), sticky=tk.W)
+    
+    def create_db_widgets(self):
+        tk.Label(self, text='Database related Actions:', font=('Arial', 16))\
+            .grid(row=1, column=0, columnspan=4, pady=(0, 10), sticky=tk.W)
+        tk.Button(self, text="View All Data???", command=self.say_hi)\
+            .grid(row=2, column=0)
+        tk.Button(self, text="Update Database", command=self.say_hi)\
+            .grid(row=2, column=1)
+        tk.Button(self, text="Purge all Data", command=self.say_hi)\
+            .grid(row=2, column=2)
 
-        # put some text with a larger bold font on it
-        st = wx.StaticText(pnl, label="Hello World!")
-        font = st.GetFont()
-        font.PointSize += 10
-        font = font.Bold()
-        st.SetFont(font)
+    def create_bloxplot_widgets(self):
+        tk.Label(self, text="Box Plot:", font=("Arial", 16))\
+            .grid(row=3, column=0, columnspan=4, pady=(24, 10), sticky=tk.W)
 
-        # and create a sizer to manage the layout of child widgets
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(st, wx.SizerFlags().Border(wx.TOP|wx.LEFT, 25))
-        pnl.SetSizer(sizer)
+        tk.Label(self, text="Start Year:")\
+            .grid(row=4, column=0, pady=(10, 0), sticky=tk.W)
+        self.start_year_entry = tk.Entry(self)
+        self.start_year_entry.grid(row=5, column=0, sticky=tk.W)
 
-        # create a menu bar
-        self.makeMenuBar()
+        tk.Label(self, text="End Year:")\
+            .grid(row=4, column=1, pady=(10, 0), sticky=tk.W)
+        self.end_year_entry = tk.Entry(self)
+        self.end_year_entry.grid(row=5, column=1, sticky=tk.W)
+        
+        tk.Button(self, text="Generate Blox Pot", command=self.say_hi)\
+            .grid(row=6, column=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
-        # and a status bar
-        self.CreateStatusBar()
-        self.SetStatusText("Welcome to wxPython!")
+        self.blox_plot_error = tk.Label(self, text=" ", fg="#ff0000")
+        self.blox_plot_error.grid(row=7, column=0, columnspan=2, sticky=tk.W)
+        # TODO: Embed Plots: https://pythonprogramming.net/how-to-embed-matplotlib-graph-tkinter-gui/
 
+    def create_lineplot_widgets(self):
+        tk.Label(self, text="Line Plot:", font=("Arial", 16))\
+            .grid(row=3, column=2, columnspan=4, pady=(24, 10), sticky=tk.W)
 
-    def makeMenuBar(self):
-        """
-        A menu bar is composed of menus, which are composed of menu items.
-        This method builds a set of menus and binds handlers to be called
-        when the menu item is selected.
-        """
+        # TODO: Make it dropdown
+        tk.Label(self, text="Month:")\
+            .grid(row=4, column=2, pady=(10, 0), sticky=tk.W)
+        self.month_entry = tk.Entry(self)
+        self.month_entry.grid(row=5, column=2, sticky=tk.W)
 
-        # Make a file menu with Hello and Exit items
-        fileMenu = wx.Menu()
-        # The "\t..." syntax defines an accelerator key that also triggers
-        # the same event
-        helloItem = fileMenu.Append(-1, "&Hello...\tCtrl-H",
-                "Help string shown in status bar for this menu item")
-        fileMenu.AppendSeparator()
-        # When using a stock ID we don't need to specify the menu item's
-        # label
-        exitItem = fileMenu.Append(wx.ID_EXIT)
+        tk.Label(self, text="Year:")\
+            .grid(row=4, column=3, pady=(10, 0), sticky=tk.W)
+        self.year_entry = tk.Entry(self)
+        self.year_entry.grid(row=5, column=3, sticky=tk.W)
+        
+        tk.Button(self, text="Generate Line Pot", command=self.say_hi)\
+            .grid(row=6, column=2, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
-        # Now a help menu for the about item
-        helpMenu = wx.Menu()
-        aboutItem = helpMenu.Append(wx.ID_ABOUT)
+        self.line_plot_error = tk.Label(self, text=" ", fg="#ff0000")
+        self.line_plot_error.grid(row=7, column=2, columnspan=2, sticky=tk.W)
+        # TODO: Embed Plots: https://pythonprogramming.net/how-to-embed-matplotlib-graph-tkinter-gui/
 
-        # Make the menu bar and add the two menus to it. The '&' defines
-        # that the next letter is the "mnemonic" for the menu item. On the
-        # platforms that support it those letters are underlined and can be
-        # triggered from the keyboard.
-        menuBar = wx.MenuBar()
-        menuBar.Append(fileMenu, "&File")
-        menuBar.Append(helpMenu, "&Help")
-
-        # Give the menu bar to the frame
-        self.SetMenuBar(menuBar)
-
-        # Finally, associate a handler function with the EVT_MENU event for
-        # each of the menu items. That means that when that menu item is
-        # activated then the associated handler function will be called.
-        self.Bind(wx.EVT_MENU, self.OnHello, helloItem)
-        self.Bind(wx.EVT_MENU, self.OnExit,  exitItem)
-        self.Bind(wx.EVT_MENU, self.OnAbout, aboutItem)
-
-
-    def OnExit(self, event):
-        """Close the frame, terminating the application."""
-        self.Close(True)
-
-
-    def OnHello(self, event):
-        """Say hello to the user."""
-        wx.MessageBox("Hello again from wxPython")
-
-
-    def OnAbout(self, event):
-        """Display an About Dialog"""
-        wx.MessageBox("This is a wxPython Hello World sample",
-                      "About Hello World 2",
-                      wx.OK|wx.ICON_INFORMATION)
-
+    def say_hi(self):
+        print("hi there, everyone!")
 
 if __name__ == '__main__':
-    # When this module is run (not imported) then create the app, the
-    # frame, show it, and start the event loop.
-    app = wx.App()
-    frm = WetherProcessor(None, title='Hello World 2')
-    frm.Show()
-    app.MainLoop()
+    root = tk.Tk()
+    app = Application(master=root)
+    app.mainloop()
