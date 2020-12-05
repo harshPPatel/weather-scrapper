@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+import sqlite3
+from db_operations import DBOperations
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -8,6 +10,8 @@ class Application(tk.Frame):
         self.master.geometry('900x500')
         self.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         self.create_widgets()
+        self.db_ops = DBOperations()
+        self.db_ops.initialize_db()
 
     def create_widgets(self):
         tk.Label(self, text='Weather Processor', font=('Arial Bold', 22))\
@@ -96,13 +100,13 @@ class Application(tk.Frame):
         tree.heading("max_temp", text="Maximum Temperature")
         tree.heading("avg_temp", text="Average Temperature")
         
-        tree.insert("", "end", "1", text="1", values=("23-Jun-17", "Winnipeg", 12.3, 1.2, 2.3))
-        tree.insert("", "end", "2", text="2", values=("23-Jun-17", "Winnipeg", 12.3, 1.2, 2.3))
-        tree.insert("", "end", "3", text="3", values=("23-Jun-17", "Winnipeg", 12.3, 1.2, 2.3))
-        tree.insert("", "end", "4", text="4", values=("23-Jun-17", "Winnipeg", 12.3, 1.2, 2.3))
-        tree.insert("", "end", "5", text="5", values=("23-Jun-17", "Winnipeg", 12.3, 1.2, 2.3))
-        tree.insert("", "end", "6", text="6", values=("23-Jun-17", "Winnipeg", 12.3, 1.2, 2.3))
-        
+        try:
+            data = self.db_ops.get_all_data()
+            for row in data:
+                tree.insert("", "end", str(row[0]), text=str(row[0]), values=(str(row[1]), str(row[2]), str(row[3]), str(row[4]), str(row[5])))
+        except Exception as e:
+            print("ERROR: " + str(e))
+
         tree.pack()
 
     def say_hi(self):

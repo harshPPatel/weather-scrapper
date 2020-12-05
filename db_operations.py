@@ -1,6 +1,5 @@
 import sqlite3
-import datetime
-import mysql.connector
+from datetime import datetime
 
 #If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
 # I can check the db for date overwrites
@@ -11,18 +10,18 @@ import mysql.connector
 
 class DBOperations():
 
-  def __init__(self):
-    self.dates_data = self.get_dates()
+  # def __init__(self):
+  #   # self.dates_data = self.get_dates()
 
   def initialize_db(self):
     with DBCM("weather.sqlite") as cur:
             cur.execute("""CREATE TABLE IF NOT EXISTS weather (
-                    id integer prmary key autoincrement not null,
-                    sample_date text UNIQUE not null,
-                    location text not null,
-                    min_temp real not null,
-                    max_temp real not null,
-                    avg_temp real not null);""")
+                    id INTEGER PRIMARY key AUTOINCREMENT NOT NULL,
+                    sample_date TEXT UNIQUE NOT NULL,
+                    location TEXT NOT NULL,
+                    min_temp REAL NOT NULL,
+                    max_temp REAL NOT NULL,
+                    avg_temp REAL NOT NULL);""")
 
 
   def save_data(self, dataset):
@@ -31,14 +30,14 @@ class DBOperations():
     I wanted to test basic functionality first just so I could get something done"""
     with DBCM("weather.sqlite") as cur:
       for data in dataset:
-          while data not in self.date_data:
+          while data not in self.dates_data:
             insert_string = ''' INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
                         VALUES(?,?,?,?)'''
             values = (data, "Winnipeg, MB", dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
             cur.execute(insert_string, values)
 
   # now.strftime("%m/%d/%Y,
-  def fetch_data(start_date = datetime.now().now.strftime("%Y-%M-%D"), end_date = datetime.now().now.strftime("%Y-%M-%D")):
+  def fetch_data(self, start_date = datetime.now().strftime("%Y-%M-%D"), end_date = datetime.now().strftime("%Y-%M-%D")):
     """Takes a date, and a location, and retrives the values if any are found
     If no parameters are provided, retruns information for todays date """
     with DBCM("weather.sqlite") as cur:
@@ -46,6 +45,11 @@ class DBOperations():
       params = (start_date, end_date)
       return cur.execute(query, params)
 
+  def get_all_data(self):
+    with DBCM("weather.sqlite") as cur:
+      query = "SELECT * FROM weather"
+      cur.execute(query)
+      return cur.fetchall()
 
   def purge_data(self):
     with DBCM("weather.sqlite") as cur:
