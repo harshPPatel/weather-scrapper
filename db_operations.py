@@ -19,9 +19,9 @@ class DBOperations():
                     id INTEGER PRIMARY key AUTOINCREMENT NOT NULL,
                     sample_date TEXT UNIQUE NOT NULL,
                     location TEXT NOT NULL,
-                    min_temp REAL NOT NULL,
-                    max_temp REAL NOT NULL,
-                    avg_temp REAL NOT NULL);""")
+                    min_temp REAL,
+                    max_temp REAL,
+                    avg_temp REAL);""")
 
 
   def save_data(self, dataset):
@@ -30,11 +30,19 @@ class DBOperations():
     I wanted to test basic functionality first just so I could get something done"""
     with DBCM("weather.sqlite") as cur:
       for data in dataset:
-          while data not in self.dates_data:
-            insert_string = ''' INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
-                        VALUES(?,?,?,?)'''
-            values = (data, "Winnipeg, MB", dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
+          print(data)
+          min_temp = float(dataset[data]["Min"]) if dataset[data]["Min"] else None
+          max_temp = float(dataset[data]["Max"]) if dataset[data]["Max"] else None
+          avg_temp = float(dataset[data]["Mean"]) if dataset[data]["Mean"] else None
+          insert_string = '''INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
+                      VALUES(?,?,?,?,?);'''
+          values = (data, "Winnipeg, MB", min_temp, max_temp, avg_temp)
+          try:
             cur.execute(insert_string, values)
+          except Exception as e:
+            print("ERROR: While Adding new row")
+            print(str(e))
+            
 
   # now.strftime("%m/%d/%Y,
   def fetch_data(self, start_date = datetime.now().strftime("%Y-%M-%D"), end_date = datetime.now().strftime("%Y-%M-%D")):
@@ -50,6 +58,13 @@ class DBOperations():
       query = "SELECT * FROM weather"
       cur.execute(query)
       return cur.fetchall()
+  
+  def get_latest_row(self):
+    # TODO: remove "weather.sqlite" with class variable
+    with DBCM("weather.sqlite") as cur:
+      query = "SELECT * FROM weather ORDER BY sample_date DESC LIMIT 1"
+      cur.execute(query)
+      return cur.fetchone()
 
   def purge_data(self):
     with DBCM("weather.sqlite") as cur:

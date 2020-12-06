@@ -42,6 +42,7 @@ class WeatherScraper(HTMLParser):
     self.keys_names = ["Max", "Min", "Mean"]
 
   def handle_starttag(self, tag, attrs):
+    # TODO: Do we need is_scrapping and is_looping both?
     # updating some boolean flags when we start reading tbody tag
     if (tag == "tbody"):
       self.is_scraping = True
@@ -68,10 +69,11 @@ class WeatherScraper(HTMLParser):
               # already have entry for this date and stop the scrape loop
               date = self.temp_date.strftime('%Y-%m-%d')
               if date in self.weather_data:
+                # stopping the loop if we have already reached the end date
                 self.is_looping = False
             except Exception as e:
               print("ERROR: Invalid Date")
-              print(e.with_traceback())
+              print(str(e))
               self.temp_date = None
       # toggling the td flag if temp_date exists (the last row (for current day) does not contains any values,
       # it also does not have any abbr value, we are ignoring that value as looks like this row is updated next day),
@@ -95,10 +97,12 @@ class WeatherScraper(HTMLParser):
       try:
         # trying to parse value as float
         parsed_value = float(value)
-      except ValueError:
+      except ValueError as e:
         # setting it to None if it is invalid string (some rows does not have data and it shows M instead of valid float number)
         parsed_value = None
         print("ERROR: Invalid Float Value")
+        print(value)
+        print(str(e))
       
       # Adding parsed values to temp_data with the keys accordingly
       # if row is missing one or all column values, we still need to set it as None
@@ -130,9 +134,57 @@ class WeatherScraper(HTMLParser):
 
   def build_url(self, year, month):
     # QUESTION: What is StartYear and EndYear in URL? Do we really need them in URL while scraping data? I tested it on my end and these parameters are not required
-    return 'http://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174&timeframe=2&Year='+str(year)+'&Month='+str(month)
+    url = 'http://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174&timeframe=2&Year='+str(year)+'&Month='+str(month)
+    print("URL:", url)
+    return url
+  
+  # TODO: scrape method to fetch data between two dates
+  
+  def scrape_data(self, start, end):
+    end_date = datetime.strptime(end, '%Y-%m-%d')
+    
+    # today = datetime.today()
+    year = end_date.year
+    month = end_date.month
+    # year = 1998
+    # month = 12
+    self.is_looping = True
+    
+    # looping to scrape pages until we have start date available in dataset
+    while self.is_looping:
+        if start in self.weather_data:
+          print("already exists")
+          self.is_looping = False
+          break
+        url = self.build_url(year, month)
+        print(year, month)
+        print("Start:", start,"\"")
+        # parsing the response from website
+        with urllib.request.urlopen(url) as response:
+          html = str(response.read())
+          self.feed(html)
+        pass
+        
+        # updating month and year for next loop once we complete reading the page
+        if (month != 1):
+          month -= 1
+        else:
+          month = 12
+          year -= 1
 
-  def scrape_data(self):
+    # TODO: Remove this before final submission
+    self.print_data()
+    
+    return_data = {}
+    
+    for key, value in self.weather_data.items():
+      if (key > start):
+        return_data[key] = value
+
+    return return_data
+
+
+  def scrape_all_data(self):
       # QUESTION: Is this method supposed to be here? Or are we supposed to create outside class?
       # fetching the current year and month when this script will be running
       today = datetime.today()
@@ -164,5 +216,6 @@ class WeatherScraper(HTMLParser):
 
       return self.weather_data
 
-myParser = WeatherScraper()
-myParser.scrape_data()
+if __name__ == "__main__":
+  myParser = WeatherScraper()
+  myParser.scrape_all_data()

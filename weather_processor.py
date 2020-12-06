@@ -1,7 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
 import sqlite3
+from datetime import datetime
 from db_operations import DBOperations
+from scrape_weather import WeatherScraper
+from urllib.request import urlopen
+import base64
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -31,52 +35,54 @@ class Application(tk.Frame):
             .grid(row=1, column=0, columnspan=4, pady=(0, 10), sticky=tk.W)
         tk.Button(self, text="View All Data", command=self.view_all_data)\
             .grid(row=2, column=0)
-        tk.Button(self, text="Update Database", command=self.say_hi)\
+        tk.Button(self, text="Update Database", command=self.update_db)\
             .grid(row=2, column=1)
         tk.Button(self, text="Purge all Data", command=self.say_hi)\
             .grid(row=2, column=2)
+        self.db_status_label = tk.Label(self, text=" ")
+        self.db_status_label.grid(row=3, column=0, columnspan=2)
 
     def create_bloxplot_widgets(self):
         tk.Label(self, text="Box Plot:", font=("Arial", 16))\
-            .grid(row=3, column=0, columnspan=4, pady=(50, 10), sticky=tk.W)
+            .grid(row=4, column=0, columnspan=4, pady=(50, 10), sticky=tk.W)
 
         tk.Label(self, text="Start Year:")\
-            .grid(row=4, column=0, pady=(10, 0), sticky=tk.W)
+            .grid(row=5, column=0, pady=(10, 0), sticky=tk.W)
         self.start_year_entry = tk.Entry(self)
         self.start_year_entry.grid(row=5, column=0, sticky=tk.W)
 
         tk.Label(self, text="End Year:")\
-            .grid(row=4, column=1, pady=(10, 0), sticky=tk.W)
+            .grid(row=5, column=1, pady=(10, 0), sticky=tk.W)
         self.end_year_entry = tk.Entry(self)
         self.end_year_entry.grid(row=5, column=1, sticky=tk.W)
         
         tk.Button(self, text="Generate Blox Pot", command=self.say_hi)\
-            .grid(row=6, column=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
+            .grid(row=7, column=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
         self.blox_plot_error = tk.Label(self, text=" ", fg="#ff0000")
-        self.blox_plot_error.grid(row=7, column=0, columnspan=2, sticky=tk.W)
+        self.blox_plot_error.grid(row=8, column=0, columnspan=2, sticky=tk.W)
         # TODO: Embed Plots: https://pythonprogramming.net/how-to-embed-matplotlib-graph-tkinter-gui/
 
     def create_lineplot_widgets(self):
         tk.Label(self, text="Line Plot:", font=("Arial", 16))\
-            .grid(row=3, column=2, columnspan=4, pady=(50, 10), sticky=tk.W)
+            .grid(row=4, column=2, columnspan=4, pady=(50, 10), sticky=tk.W)
 
         # TODO: Make it dropdown
         tk.Label(self, text="Month:")\
-            .grid(row=4, column=2, pady=(10, 0), sticky=tk.W)
+            .grid(row=5, column=2, pady=(10, 0), sticky=tk.W)
         self.month_entry = tk.Entry(self)
         self.month_entry.grid(row=5, column=2, sticky=tk.W)
 
         tk.Label(self, text="Year:")\
-            .grid(row=4, column=3, pady=(10, 0), sticky=tk.W)
+            .grid(row=5, column=3, pady=(10, 0), sticky=tk.W)
         self.year_entry = tk.Entry(self)
         self.year_entry.grid(row=5, column=3, sticky=tk.W)
         
         tk.Button(self, text="Generate Line Pot", command=self.say_hi)\
-            .grid(row=6, column=2, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
+            .grid(row=7, column=2, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
         self.line_plot_error = tk.Label(self, text=" ", fg="#ff0000")
-        self.line_plot_error.grid(row=7, column=2, columnspan=2, sticky=tk.W)
+        self.line_plot_error.grid(row=8, column=2, columnspan=2, sticky=tk.W)
         # TODO: Embed Plots: https://pythonprogramming.net/how-to-embed-matplotlib-graph-tkinter-gui/
 
     def view_all_data(self):
@@ -105,9 +111,39 @@ class Application(tk.Frame):
             for row in data:
                 tree.insert("", "end", str(row[0]), text=str(row[0]), values=(str(row[1]), str(row[2]), str(row[3]), str(row[4]), str(row[5])))
         except Exception as e:
+            # TODO: Show error to GUI
             print("ERROR: " + str(e))
 
-        tree.pack()
+        tree.pack(expand=1, fill=tk.BOTH)
+        
+    def update_db(self):
+        # get last date from
+            # SELECT *
+            # FROM weather
+            # ORDER BY sample_date DESC
+            # LIMIT 1
+        try:
+            self.db_status_label['text'] = "Fetching the data and Updating the Database"
+            # TODO: Run this code on seperate thread
+            get_latest_row = self.db_ops.get_latest_row()
+            scraper = WeatherScraper()
+            if (get_latest_row == None):
+                data = scraper.scrape_all_data()
+                self.db_ops.save_data(data)
+            else:
+                latest_db_date = get_latest_row[1]
+                today = datetime.today().strftime('%Y-%m-%d')
+                if (today != latest_db_date and today > latest_db_date):
+                    data = scraper.scrape_data(latest_db_date, today)
+                    self.db_ops.save_data(data)
+            # TODO: Update this inside thread once task is done
+            self.db_status_label['text'] = " "
+            # Fetch data using Weather Scraper Class
+            # save data to db
+            # show some kind of alert/message
+            
+        except Exception as e:
+            print("ERROR: " + str(e))
 
     def say_hi(self):
         print("hi there, everyone!")
