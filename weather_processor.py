@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import sqlite3
 from datetime import datetime
 from db_operations import DBOperations
@@ -13,6 +14,7 @@ class Application(tk.Frame):
         self.master = master
         self.master.geometry('900x500')
         self.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.db_status_text = tk.StringVar()
         self.create_widgets()
         self.db_ops = DBOperations()
         self.db_ops.initialize_db()
@@ -37,9 +39,9 @@ class Application(tk.Frame):
             .grid(row=2, column=0)
         tk.Button(self, text="Update Database", command=self.update_db)\
             .grid(row=2, column=1)
-        tk.Button(self, text="Purge all Data", command=self.say_hi)\
+        tk.Button(self, text="Purge all Data", command=self.purge_db)\
             .grid(row=2, column=2)
-        self.db_status_label = tk.Label(self, text=" ")
+        self.db_status_label = tk.Label(self, textvariable=self.db_status_text)
         self.db_status_label.grid(row=3, column=0, columnspan=2)
 
     def create_bloxplot_widgets(self):
@@ -123,7 +125,7 @@ class Application(tk.Frame):
             # ORDER BY sample_date DESC
             # LIMIT 1
         try:
-            self.db_status_label['text'] = "Fetching the data and Updating the Database"
+            self.db_status_text.set("Fetching the data and Updating the Database")
             # TODO: Run this code on seperate thread
             get_latest_row = self.db_ops.get_latest_row()
             scraper = WeatherScraper()
@@ -137,13 +139,19 @@ class Application(tk.Frame):
                     data = scraper.scrape_data(latest_db_date, today)
                     self.db_ops.save_data(data)
             # TODO: Update this inside thread once task is done
-            self.db_status_label['text'] = " "
+            self.db_status_text.set(" ")
             # Fetch data using Weather Scraper Class
             # save data to db
             # show some kind of alert/message
             
         except Exception as e:
             print("ERROR: " + str(e))
+
+    def purge_db(self):
+        # TODO: Make sure we are not getting any error on Windows. I am having some issues with Big Sur on Mac
+        message_box = messagebox.askokcancel(title='Purge Data',message='Do you really want to delete all data?',icon='error')
+        if message_box == 'ok':
+            self.db_ops.purge_data()
 
     def say_hi(self):
         print("hi there, everyone!")
