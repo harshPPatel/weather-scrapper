@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 
-#If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
+# If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
 # I can check the db for date overwrites
 # Data will be the actual dictionary that we use for each operation
 # Ok, Ill need to take a new apprach for this - because dates are texts, and I dont want it running endlessly
@@ -49,7 +49,7 @@ class DBOperations():
     """Takes a date, and a location, and retrives the values if any are found
     If no parameters are provided, retruns information for todays date """
     with DBCM("weather.sqlite") as cur:
-      query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ? AND location = ?"
+      query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ?;"
       params = (start_date, end_date)
       return cur.execute(query, params)
 
