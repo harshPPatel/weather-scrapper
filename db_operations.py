@@ -55,7 +55,7 @@ class DBOperations():
 
   def get_all_data(self):
     with DBCM("weather.sqlite") as cur:
-      query = "SELECT * FROM weather"
+      query = "SELECT * FROM weather ORDER BY sample_date DESC"
       cur.execute(query)
       return cur.fetchall()
   
