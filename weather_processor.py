@@ -80,7 +80,7 @@ class Application(tk.Frame):
         # self.month_entry = tk.Entry(self)
         # self.month_entry.grid(row=5, column=2, sticky=tk.W)
 
-        self.line_month.set("jan") # default value
+        self.line_month.set(1) # default value
 
         self.month_entry = tk.OptionMenu(self, self.line_month, "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
         self.month_entry.grid(row=5, column=2, sticky=tk.W)
@@ -90,7 +90,7 @@ class Application(tk.Frame):
         self.year_entry = tk.Entry(self)
         self.year_entry.grid(row=5, column=3, sticky=tk.W)
         
-        tk.Button(self, text="Generate Line Pot", command=self.say_hi)\
+        tk.Button(self, text="Generate Line Pot", command=self.generate_lineplot)\
             .grid(row=7, column=2, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
         self.line_plot_error = tk.Label(self, text=" ", fg="#ff0000")
@@ -162,19 +162,14 @@ class Application(tk.Frame):
         message_box = messagebox.askokcancel(title='Purge Data',message='Do you really want to delete all data?',icon='error')
         if message_box == 'ok':
             self.db_ops.purge_data()
-            
 
     def generate_boxplot(self):
-        # 1. validate values
-        # 2. make request to DB
-        # 3. format data (make function to convert data)
-        # 4. generate plot
         start_year = self.start_year_entry.get()
         end_year = self.end_year_entry.get()
         try:
             start_year = int(start_year)
             end_year = int(end_year)
-            if (not start_year or not end_year or start_year <= 0 or end_year <= 0):
+            if (start_year <= 0 or end_year <= 0):
                 raise ValueError()
             elif (start_year > end_year):
                 self.blox_plot_error['text'] = 'ERROR: Start Year can not be greater than end Year!'
@@ -187,6 +182,38 @@ class Application(tk.Frame):
         except Exception as e:
             if (self.blox_plot_error['text'] != ' '):
                 self.blox_plot_error['text'] = 'Please enter valid Year values!'
+            print("ERROR :", str(e))
+            e.with_traceback()
+            
+    def get_month_index(self, value):
+        month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+        return (month.index(value) + 1)
+            
+    def get_formatted_month(self, index):
+        if (index < 10):
+            return ("0" + str(index))
+        else:
+            return str(index)
+
+    def generate_lineplot(self):
+        month_index = self.get_month_index(self.line_month.get())
+        formatted_month = self.get_formatted_month(month_index)
+        year = self.year_entry.get()
+        try:
+            year = int(year)
+            if (year <= 0):
+                raise ValueError()
+            else:
+                self.line_plot_error['text'] = ' '
+                data = self.db_ops.fetch_data(start_date=(str(year) + "-" + formatted_month + "-01"), end_date=(str(year) + "-" + formatted_month + "-31"))
+                boxplot_data = self.format_data_for_lineplot(data)
+                # passing empty data as this data is not used in generating line-plot
+                plot_ops = PlotOperations(data={})
+                print(boxplot_data)
+                plot_ops.show_lineplot(boxplot_data, month_index, year)
+        except Exception as e:
+            if (self.line_plot_error['text'] != ' '):
+                self.line_plot_error['text'] = 'Please enter valid Month and Year values!'
             print("ERROR :", str(e))
             e.with_traceback()
 
@@ -214,6 +241,26 @@ class Application(tk.Frame):
             print("ERROR: " + str(e))
         finally:
             return return_data
+        
+    
+    def format_data_for_lineplot(self, data):
+        return_data = []
+        try:
+            for row in data:
+                # if value is None, we are setting default value as 0.
+                # We tried using None and NaN from numpy library,
+                # but it is not currently supported to matplotlib :(
+                if (row[5] == None):
+                    return_data.append(0)
+                else:
+                    return_data.append(row[5])
+
+        except Exception as e:
+            self.line_plot_error['text'] = 'Error while processing data'
+            print("ERROR: " + str(e))
+        finally:
+            return return_data
+    
     def say_hi(self):
         print("hi there, everyone!")
 
