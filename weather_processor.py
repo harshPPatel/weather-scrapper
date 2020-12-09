@@ -27,16 +27,16 @@ class Application(tk.Frame):
     def create_widgets(self):
         tk.Label(self, text='Weather Processor', font=('Arial Bold', 22))\
             .grid(row=0, column=0, columnspan=4, pady=(10, 24))
-        
+
         self.create_db_widgets()
-        
+
         self.create_bloxplot_widgets()
-        
+
         self.create_lineplot_widgets()
 
         # tk.Label(self, text="Line Plot:", font=("Arial", 16))\
             # .grid(row=3, column=2, columnspan=4, pady=(24, 10), padx=(10, 0), sticky=tk.W)
-    
+
     def create_db_widgets(self):
         tk.Label(self, text='Database related Actions:', font=('Arial', 16))\
             .grid(row=1, column=0, columnspan=4, pady=(0, 10), sticky=tk.W)
@@ -62,7 +62,7 @@ class Application(tk.Frame):
             .grid(row=5, column=1, pady=(10, 0), sticky=tk.W)
         self.end_year_entry = tk.Entry(self)
         self.end_year_entry.grid(row=6, column=1, sticky=tk.W)
-        
+
         tk.Button(self, text="Generate Blox Pot", command=self.generate_boxplot)\
             .grid(row=7, column=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
@@ -89,7 +89,7 @@ class Application(tk.Frame):
             .grid(row=5, column=3, pady=(10, 0), sticky=tk.W)
         self.year_entry = tk.Entry(self)
         self.year_entry.grid(row=6, column=3, sticky=tk.W)
-        
+
         tk.Button(self, text="Generate Line Pot", command=self.generate_lineplot)\
             .grid(row=7, column=2, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
@@ -98,9 +98,9 @@ class Application(tk.Frame):
         # TODO: Embed Plots: https://pythonprogramming.net/how-to-embed-matplotlib-graph-tkinter-gui/
 
     def view_all_data(self):
-        newWindow = tk.Toplevel(self) 
-        newWindow.title("All Weather Data") 
-        newWindow.geometry("900x500") 
+        newWindow = tk.Toplevel(self)
+        newWindow.title("All Weather Data")
+        newWindow.geometry("900x500")
         tree = ttk.Treeview(newWindow)
         # creating table columns
         tree["columns"]=("date","location","min_temp", "max_temp", "avg_temp")
@@ -117,7 +117,7 @@ class Application(tk.Frame):
         tree.heading("min_temp", text="Minimum Temperature")
         tree.heading("max_temp", text="Maximum Temperature")
         tree.heading("avg_temp", text="Average Temperature")
-        
+
         try:
             data = self.db_ops.get_all_data()
             for row in data:
@@ -127,7 +127,7 @@ class Application(tk.Frame):
             print("ERROR: " + str(e))
 
         tree.pack(expand=1, fill=tk.BOTH)
-        
+
     def update_db(self):
         # get last date from
             # SELECT *
@@ -153,7 +153,7 @@ class Application(tk.Frame):
             # Fetch data using Weather Scraper Class
             # save data to db
             # show some kind of alert/message
-            
+
         except Exception as e:
             print("ERROR: " + str(e))
 
@@ -184,11 +184,11 @@ class Application(tk.Frame):
                 self.blox_plot_error['text'] = 'Please enter valid Year values!'
             print("ERROR :", str(e))
             e.with_traceback()
-            
+
     def get_month_index(self, value):
         month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
         return (month.index(value) + 1)
-            
+
     def get_formatted_month(self, index):
         if (index < 10):
             return ("0" + str(index))
@@ -241,8 +241,8 @@ class Application(tk.Frame):
             print("ERROR: " + str(e))
         finally:
             return return_data
-        
-    
+
+
     def format_data_for_lineplot(self, data):
         return_data = []
         try:
@@ -260,7 +260,7 @@ class Application(tk.Frame):
             print("ERROR: " + str(e))
         finally:
             return return_data
-    
+
     def say_hi(self):
         print("hi there, everyone!")
 
