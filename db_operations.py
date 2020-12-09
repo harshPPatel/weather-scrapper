@@ -48,10 +48,13 @@ class DBOperations():
   def fetch_data(self, start_date = datetime.now().strftime("%Y-%M-%D"), end_date = datetime.now().strftime("%Y-%M-%D")):
     """Takes a date, and a location, and retrives the values if any are found
     If no parameters are provided, retruns information for todays date """
+    print(start_date)
+    print(end_date)
     with DBCM("weather.sqlite") as cur:
-      query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ?;"
+      query = "SELECT * FROM weather WHERE sample_date >= ? AND sample_date <= ? ORDER BY sample_date;"
       params = (start_date, end_date)
-      return cur.execute(query, params)
+      cur.execute(query, params)
+      return cur.fetchall()
 
   def get_all_data(self):
     with DBCM("weather.sqlite") as cur:

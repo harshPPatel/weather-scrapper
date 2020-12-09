@@ -5,8 +5,12 @@ import sqlite3
 from datetime import datetime
 from db_operations import DBOperations
 from scrape_weather import WeatherScraper
+from plot_operations import PlotOperations
 from urllib.request import urlopen
 import base64
+
+# TODO: remove unnecessary imports
+# TODO: add labels for inputs
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -15,6 +19,7 @@ class Application(tk.Frame):
         self.master.geometry('900x500')
         self.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         self.db_status_text = tk.StringVar()
+        self.line_month = tk.StringVar(self)
         self.create_widgets()
         self.db_ops = DBOperations()
         self.db_ops.initialize_db()
@@ -58,7 +63,7 @@ class Application(tk.Frame):
         self.end_year_entry = tk.Entry(self)
         self.end_year_entry.grid(row=5, column=1, sticky=tk.W)
         
-        tk.Button(self, text="Generate Blox Pot", command=self.say_hi)\
+        tk.Button(self, text="Generate Blox Pot", command=self.generate_boxplot)\
             .grid(row=7, column=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
         self.blox_plot_error = tk.Label(self, text=" ", fg="#ff0000")
@@ -72,7 +77,12 @@ class Application(tk.Frame):
         # TODO: Make it dropdown
         tk.Label(self, text="Month:")\
             .grid(row=5, column=2, pady=(10, 0), sticky=tk.W)
-        self.month_entry = tk.Entry(self)
+        # self.month_entry = tk.Entry(self)
+        # self.month_entry.grid(row=5, column=2, sticky=tk.W)
+
+        self.line_month.set("jan") # default value
+
+        self.month_entry = tk.OptionMenu(self, self.line_month, "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
         self.month_entry.grid(row=5, column=2, sticky=tk.W)
 
         tk.Label(self, text="Year:")\
@@ -152,7 +162,58 @@ class Application(tk.Frame):
         message_box = messagebox.askokcancel(title='Purge Data',message='Do you really want to delete all data?',icon='error')
         if message_box == 'ok':
             self.db_ops.purge_data()
+            
 
+    def generate_boxplot(self):
+        # 1. validate values
+        # 2. make request to DB
+        # 3. format data (make function to convert data)
+        # 4. generate plot
+        start_year = self.start_year_entry.get()
+        end_year = self.end_year_entry.get()
+        try:
+            start_year = int(start_year)
+            end_year = int(end_year)
+            if (not start_year or not end_year or start_year <= 0 or end_year <= 0):
+                raise ValueError()
+            elif (start_year > end_year):
+                self.blox_plot_error['text'] = 'ERROR: Start Year can not be greater than end Year!'
+            else:
+                self.blox_plot_error['text'] = ' '
+                data = self.db_ops.fetch_data(start_date=(str(start_year) + "-01-01"), end_date=(str(end_year) + "-12-31"))
+                boxplot_data = self.format_data_for_boxplot(data)
+                plot_ops = PlotOperations(data=boxplot_data)
+                plot_ops.show_boxplot()
+        except Exception as e:
+            if (self.blox_plot_error['text'] != ' '):
+                self.blox_plot_error['text'] = 'Please enter valid Year values!'
+            print("ERROR :", str(e))
+            e.with_traceback()
+
+    def format_data_for_boxplot(self, data):
+        return_data = {}
+        try:
+            for row in data:
+                date = datetime.strptime(row[1], '%Y-%m-%d')
+                year = date.year
+                month = date.month
+                if not return_data.get(year):
+                    return_data[year] = {}
+                if not return_data[year].get(month):
+                    return_data[year][month] = []
+                # if value is None, we are setting default value as 0.
+                # We tried using None and NaN from numpy library,
+                # but it is not currently supported to matplotlib :(
+                if (row[5] == None):
+                    return_data[year][month].append(0)
+                else:
+                    return_data[year][month].append(row[5])
+
+        except Exception as e:
+            self.blox_plot_error['text'] = 'Error while processing data'
+            print("ERROR: " + str(e))
+        finally:
+            return return_data
     def say_hi(self):
         print("hi there, everyone!")
 
