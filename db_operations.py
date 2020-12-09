@@ -1,8 +1,7 @@
 import sqlite3
-import datetime
-import mysql.connector
+from datetime import datetime
 
-#If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
+# If I'm reading this correctly, we should only ever be passed a single dictionary (think of a single day)
 # I can check the db for date overwrites
 # Data will be the actual dictionary that we use for each operation
 # Ok, Ill need to take a new apprach for this - because dates are texts, and I dont want it running endlessly
@@ -11,18 +10,18 @@ import mysql.connector
 
 class DBOperations():
 
-  def __init__(self):
-    self.dates_data = self.get_dates()
+  # def __init__(self):
+  #   # self.dates_data = self.get_dates()
 
   def initialize_db(self):
     with DBCM("weather.sqlite") as cur:
             cur.execute("""CREATE TABLE IF NOT EXISTS weather (
-                    id integer prmary key autoincrement not null,
-                    sample_date text UNIQUE not null,
-                    location text not null,
-                    min_temp real not null,
-                    max_temp real not null,
-                    avg_temp real not null);""")
+                    id INTEGER PRIMARY key AUTOINCREMENT NOT NULL,
+                    sample_date TEXT UNIQUE NOT NULL,
+                    location TEXT NOT NULL,
+                    min_temp REAL,
+                    max_temp REAL,
+                    avg_temp REAL);""")
 
 
   def save_data(self, dataset):
@@ -31,21 +30,44 @@ class DBOperations():
     I wanted to test basic functionality first just so I could get something done"""
     with DBCM("weather.sqlite") as cur:
       for data in dataset:
-          while data not in self.date_data:
-            insert_string = ''' INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
-                        VALUES(?,?,?,?)'''
-            values = (data, "Winnipeg, MB", dataset[data]["min_temp"], dataset[data]["max_temp"], dataset[data]["avg_temp"])
+          print(data)
+          min_temp = float(dataset[data]["Min"]) if dataset[data]["Min"] else None
+          max_temp = float(dataset[data]["Max"]) if dataset[data]["Max"] else None
+          avg_temp = float(dataset[data]["Mean"]) if dataset[data]["Mean"] else None
+          insert_string = '''INSERT INTO weather(sample_date, location, min_temp, max_temp, avg_temp)
+                      VALUES(?,?,?,?,?);'''
+          values = (data, "Winnipeg, MB", min_temp, max_temp, avg_temp)
+          try:
             cur.execute(insert_string, values)
+          except Exception as e:
+            print("ERROR: While Adding new row")
+            print(str(e))
+            
 
   # now.strftime("%m/%d/%Y,
-  def fetch_data(start_date = datetime.now().now.strftime("%Y-%M-%D"), end_date = datetime.now().now.strftime("%Y-%M-%D")):
+  def fetch_data(self, start_date = datetime.now().strftime("%Y-%M-%D"), end_date = datetime.now().strftime("%Y-%M-%D")):
     """Takes a date, and a location, and retrives the values if any are found
     If no parameters are provided, retruns information for todays date """
+    print(start_date)
+    print(end_date)
     with DBCM("weather.sqlite") as cur:
-      query = "SELECT * FROM weather WHERE sameple_date < ? AND sample_date > ? AND location = ?"
+      query = "SELECT * FROM weather WHERE sample_date >= ? AND sample_date <= ? ORDER BY sample_date;"
       params = (start_date, end_date)
-      return cur.execute(query, params)
+      cur.execute(query, params)
+      return cur.fetchall()
 
+  def get_all_data(self):
+    with DBCM("weather.sqlite") as cur:
+      query = "SELECT * FROM weather ORDER BY sample_date DESC"
+      cur.execute(query)
+      return cur.fetchall()
+  
+  def get_latest_row(self):
+    # TODO: remove "weather.sqlite" with class variable
+    with DBCM("weather.sqlite") as cur:
+      query = "SELECT * FROM weather ORDER BY sample_date DESC LIMIT 1"
+      cur.execute(query)
+      return cur.fetchone()
 
   def purge_data(self):
     with DBCM("weather.sqlite") as cur:
