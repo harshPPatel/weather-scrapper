@@ -56,12 +56,12 @@ class Application(tk.Frame):
         tk.Label(self, text="Start Year:")\
             .grid(row=5, column=0, pady=(10, 0), sticky=tk.W)
         self.start_year_entry = tk.Entry(self)
-        self.start_year_entry.grid(row=5, column=0, sticky=tk.W)
+        self.start_year_entry.grid(row=6, column=0, sticky=tk.W)
 
         tk.Label(self, text="End Year:")\
             .grid(row=5, column=1, pady=(10, 0), sticky=tk.W)
         self.end_year_entry = tk.Entry(self)
-        self.end_year_entry.grid(row=5, column=1, sticky=tk.W)
+        self.end_year_entry.grid(row=6, column=1, sticky=tk.W)
         
         tk.Button(self, text="Generate Blox Pot", command=self.generate_boxplot)\
             .grid(row=7, column=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
@@ -83,12 +83,12 @@ class Application(tk.Frame):
         self.line_month.set(1) # default value
 
         self.month_entry = tk.OptionMenu(self, self.line_month, "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
-        self.month_entry.grid(row=5, column=2, sticky=tk.W)
+        self.month_entry.grid(row=6, column=2, sticky=tk.W)
 
         tk.Label(self, text="Year:")\
             .grid(row=5, column=3, pady=(10, 0), sticky=tk.W)
         self.year_entry = tk.Entry(self)
-        self.year_entry.grid(row=5, column=3, sticky=tk.W)
+        self.year_entry.grid(row=6, column=3, sticky=tk.W)
         
         tk.Button(self, text="Generate Line Pot", command=self.generate_lineplot)\
             .grid(row=7, column=2, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
