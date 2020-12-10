@@ -18,6 +18,8 @@ from datetime import datetime
 import urllib.request
 
 class WeatherScraper(HTMLParser):
+  """Class to actually scrape the data from the website
+  """
   def __init__(self):
     HTMLParser.__init__(self)
     # used to store all the weather data scraped from website
@@ -42,6 +44,9 @@ class WeatherScraper(HTMLParser):
     self.keys_names = ["Max", "Min", "Mean"]
 
   def handle_starttag(self, tag, attrs):
+    """Function to handle processing the start tag and what to pull
+       out of each element
+    """
     # TODO: Do we need is_scrapping and is_looping both?
     # updating some boolean flags when we start reading tbody tag
     if (tag == "tbody"):
@@ -83,6 +88,7 @@ class WeatherScraper(HTMLParser):
         self.td_count += 1
 
   def handle_data(self, data):
+    """Takes the data and ensures that it is valid, and then adds it to a dictionary"""
     # removing any whitespaces at two ends from data
     value = data.strip()
     # after valid rows in table, there is row which shows sum of all values, this is the row which toggles the
@@ -103,12 +109,13 @@ class WeatherScraper(HTMLParser):
         print("ERROR: Invalid Float Value")
         print(value)
         print(str(e))
-      
+
       # Adding parsed values to temp_data with the keys accordingly
       # if row is missing one or all column values, we still need to set it as None
       self.temp_data[self.keys_names[self.td_count - 1]] = parsed_value
 
   def handle_endtag(self, tag):
+    """Handles what the program should do when it encounters an endtag"""
     if (tag == "tbody"):
       # Toggling the scrapping to off we have completed reading tbody tag
       self.is_scraping = False
@@ -129,27 +136,27 @@ class WeatherScraper(HTMLParser):
         self.is_td_open = False
 
   def print_data(self):
+    """Prints all the data currently stored in the program"""
     for key in self.weather_data:
       print(key, self.weather_data[key])
 
   def build_url(self, year, month):
-    # QUESTION: What is StartYear and EndYear in URL? Do we really need them in URL while scraping data? I tested it on my end and these parameters are not required
+    """Builds the URL to scrape the data from a particular month and year"""
     url = 'http://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174&timeframe=2&Year='+str(year)+'&Month='+str(month)
     print("URL:", url)
     return url
-  
-  # TODO: scrape method to fetch data between two dates
-  
+
+
   def scrape_data(self, start, end):
+    """Loops through and adds each data value to a dictionary
+       then, when the end dat is reached, returns the dictionary for processing
+    """
     end_date = datetime.strptime(end, '%Y-%m-%d')
-    
-    # today = datetime.today()
+
     year = end_date.year
     month = end_date.month
-    # year = 1998
-    # month = 12
     self.is_looping = True
-    
+
     # looping to scrape pages until we have start date available in dataset
     while self.is_looping:
         if start in self.weather_data:
@@ -164,7 +171,7 @@ class WeatherScraper(HTMLParser):
           html = str(response.read())
           self.feed(html)
         pass
-        
+
         # updating month and year for next loop once we complete reading the page
         if (month != 1):
           month -= 1
@@ -174,9 +181,9 @@ class WeatherScraper(HTMLParser):
 
     # TODO: Remove this before final submission
     self.print_data()
-    
+
     return_data = {}
-    
+
     for key, value in self.weather_data.items():
       if (key > start):
         return_data[key] = value
@@ -185,25 +192,22 @@ class WeatherScraper(HTMLParser):
 
 
   def scrape_all_data(self):
-      # QUESTION: Is this method supposed to be here? Or are we supposed to create outside class?
-      # fetching the current year and month when this script will be running
+      """Scrapes all data from the government website"""
       today = datetime.today()
       year = today.year
       month = today.month
-      # year = 1998
-      # month = 12
       self.is_looping = True
-      
+
       # looping to scrape pages until we start getting duplicate data from website
       while self.is_looping:
           url = self.build_url(year, month)
-          
+
           # parsing the response from website
           with urllib.request.urlopen(url) as response:
             html = str(response.read())
             self.feed(html)
           pass
-          
+
           # updating month and year for next loop once we complete reading the page
           if (month != 1):
             month -= 1

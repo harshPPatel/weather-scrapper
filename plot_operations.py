@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plot
 import numpy as np
-# data will be formatted
-# Plot will show the average for all januaries across all years
 
 class PlotOperations():
   def __init__(self, data):
@@ -14,9 +12,7 @@ class PlotOperations():
 
   def show_lineplot(self, month_data, month_index, year):
     """Plots and displays a lineplot for a single month"""
-    # NOTE (Remove in final Submission): Updated to get array of temperature values for specific month
     labels = []
-    # looping through array to generate labels
     for n in range(len(month_data)):
       labels.append(n + 1)
     plot.plot(month_data)
@@ -31,17 +27,11 @@ class PlotOperations():
     dataset_to_process = {}
     for year in self.data.values():
       for key, values in year.items():
-        # print(key)
         if not (dataset_to_process.get(key)):
-          # print("Here")
           dataset_to_process[key] = []
         dataset_to_process[key] += values
-        # Remove in final?
-        # print(dataset_to_process[key])
 
     labels = dataset_to_process.keys()
-    # Collection of years, each with month values
-    # go in, and get the mean depature for each month
     keys = list(self.data.keys())
     start_year = keys[0]
     end_year = keys[len(keys) - 1]

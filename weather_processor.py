@@ -13,7 +13,12 @@ import base64
 # TODO: add labels for inputs
 
 class Application(tk.Frame):
+    """Application for the weather scraper scripts compiled for Programming In Python
+       Sends a request to the governemnt of canada website http://climate.weather.gc.ca/climate_data/
+       and gives users the option to display a month as a line graph, or a range of years as a box plot
+    """
     def __init__(self, master=None):
+        """Runs standard setup functions, and creates the baseline box for the application"""
         super().__init__(master)
         self.master = master
         self.master.geometry('900x500')
@@ -25,6 +30,7 @@ class Application(tk.Frame):
         self.db_ops.initialize_db()
 
     def create_widgets(self):
+        """Calls the functions that create the widgets for specific actions"""
         tk.Label(self, text='Weather Processor', font=('Arial Bold', 22))\
             .grid(row=0, column=0, columnspan=4, pady=(10, 24))
 
@@ -38,6 +44,7 @@ class Application(tk.Frame):
             # .grid(row=3, column=2, columnspan=4, pady=(24, 10), padx=(10, 0), sticky=tk.W)
 
     def create_db_widgets(self):
+        """Creates the widgets to allow for database actions: View, Deleting, and updating"""
         tk.Label(self, text='Database related Actions:', font=('Arial', 16))\
             .grid(row=1, column=0, columnspan=4, pady=(0, 10), sticky=tk.W)
         tk.Button(self, text="View All Data", command=self.view_all_data)\
@@ -50,6 +57,10 @@ class Application(tk.Frame):
         self.db_status_label.grid(row=3, column=0, columnspan=2)
 
     def create_bloxplot_widgets(self):
+        """Creates the widgets to allow users to
+           provide a start year, and end year, and
+           to request a boxplot graph
+        """
         tk.Label(self, text="Box Plot:", font=("Arial", 16))\
             .grid(row=4, column=0, columnspan=4, pady=(50, 10), sticky=tk.W)
 
@@ -71,6 +82,10 @@ class Application(tk.Frame):
         # TODO: Embed Plots: https://pythonprogramming.net/how-to-embed-matplotlib-graph-tkinter-gui/
 
     def create_lineplot_widgets(self):
+        """Creates the widgets responsible for
+           creating and graphing the lineplot for
+           a given month
+        """
         tk.Label(self, text="Line Plot:", font=("Arial", 16))\
             .grid(row=4, column=2, columnspan=4, pady=(50, 10), sticky=tk.W)
 
@@ -80,7 +95,7 @@ class Application(tk.Frame):
         # self.month_entry = tk.Entry(self)
         # self.month_entry.grid(row=5, column=2, sticky=tk.W)
 
-        self.line_month.set(1) # default value
+        self.line_month.set("jan") # default value
 
         self.month_entry = tk.OptionMenu(self, self.line_month, "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
         self.month_entry.grid(row=6, column=2, sticky=tk.W)
@@ -98,6 +113,7 @@ class Application(tk.Frame):
         # TODO: Embed Plots: https://pythonprogramming.net/how-to-embed-matplotlib-graph-tkinter-gui/
 
     def view_all_data(self):
+        """Shows all the data currently in the db"""
         newWindow = tk.Toplevel(self)
         newWindow.title("All Weather Data")
         newWindow.geometry("900x500")
@@ -129,6 +145,10 @@ class Application(tk.Frame):
         tree.pack(expand=1, fill=tk.BOTH)
 
     def update_db(self):
+        """uses todays date to fetch all the data
+           from the most recent date in the db
+           to today
+        """
         # get last date from
             # SELECT *
             # FROM weather
@@ -158,12 +178,14 @@ class Application(tk.Frame):
             print("ERROR: " + str(e))
 
     def purge_db(self):
+        """Calls the function to drop all data from the db"""
         # TODO: Make sure we are not getting any error on Windows. I am having some issues with Big Sur on Mac
         message_box = messagebox.askokcancel(title='Purge Data',message='Do you really want to delete all data?',icon='error')
-        if message_box == 'ok':
+        if message_box:
             self.db_ops.purge_data()
 
     def generate_boxplot(self):
+        """Uses the data in the db to generate the requested boxplot"""
         start_year = self.start_year_entry.get()
         end_year = self.end_year_entry.get()
         try:
@@ -186,16 +208,21 @@ class Application(tk.Frame):
             e.with_traceback()
 
     def get_month_index(self, value):
+        """Retuns a months index based on where it is in the year"""
         month = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
         return (month.index(value) + 1)
 
     def get_formatted_month(self, index):
+        """Returns a formatted numerical value for a month"""
         if (index < 10):
             return ("0" + str(index))
         else:
             return str(index)
 
     def generate_lineplot(self):
+        """Fetches data from the db, formats it, and then displays that data
+           in a lineplot
+        """
         month_index = self.get_month_index(self.line_month.get())
         formatted_month = self.get_formatted_month(month_index)
         year = self.year_entry.get()
@@ -218,6 +245,7 @@ class Application(tk.Frame):
             e.with_traceback()
 
     def format_data_for_boxplot(self, data):
+        """Takes data from the db, and formats it for display in a boxplot"""
         return_data = {}
         try:
             for row in data:
@@ -244,6 +272,7 @@ class Application(tk.Frame):
 
 
     def format_data_for_lineplot(self, data):
+        """Takes data and formats it for display in a lineplot"""
         return_data = []
         try:
             for row in data:

@@ -66,7 +66,8 @@ class DBOperations():
   def purge_data(self):
     """Drops the table from the database, removing all entries"""
     with DBCM("weather.sqlite") as cur:
-      cur.execute("""DROP TABLE IF EXISTS weather;""")
+      cur.execute("""DELETE FROM weather;""")
+
 
   def get_dates(self):
     """
