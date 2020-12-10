@@ -34,8 +34,6 @@ class DBOperations():
             print("ERROR: While Adding new row")
             print(str(e))
 
-
-  # now.strftime("%m/%d/%Y,
   def fetch_data(self, start_date = datetime.now().strftime("%Y-%M-%D"), end_date = datetime.now().strftime("%Y-%M-%D")):
     """Takes a date, and a location, and retrives the values if any are found
     If no parameters are provided, retruns information for todays date
